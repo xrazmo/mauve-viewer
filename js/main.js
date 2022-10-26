@@ -59,22 +59,23 @@ const svg_handlers = {
       .attr("transfrom", `translate(0,-${inner_height})`)
       .call(xAxisGrid);
 
-    let blocks = svg.append("g").attr("id", "blockes");
-
+    let blocks = svg.append("g").attr("id", "blocks");
+    let ge_lines = svg.append("g").attr("id", "ge_lines");
+    let links = svg.append("g").attr("id", "links");
     set_block_color(data.blocks);
-    console.log(Object.values(seqYaxis));
-    blocks
-      .selectAll(".mid-line")
+
+    ge_lines
+      .selectAll(".ge-line")
       .data(Object.values(seqYaxis))
       .enter()
       .append("line")
-      .attr("class", "mid-line")
+      .attr("class", "ge-line")
       .attr("x1", X(0))
       .attr("y1", (d) => Y(d))
       .attr("x2", X(XMAX))
       .attr("y2", (d) => Y(d))
       .style("stroke", "#bdbdbd")
-      .style("stroke-width", 3)
+      .style("stroke-width", 2)
       .style("stroke-linecap", "round");
 
     blocks
@@ -83,7 +84,7 @@ const svg_handlers = {
       .enter()
       .append("rect")
       .attr("class", "block")
-      .attr("name", (d) => d.n)
+      .attr("id", (d) => `${d.id}-${d.n}`)
       .attr("rx", 1)
       .attr("ry", 1)
       .attr("x", X(0))
@@ -91,17 +92,80 @@ const svg_handlers = {
       .attr("width", (d) => X(Math.abs(d.l - d.r)) - X(0))
       .attr("height", 25)
       .attr("transform", (d) => transform(d))
-      .style("stroke-width", 0.5)
+      .style("stroke-width", 0.9)
       .style("stroke", (d) => d.cl)
       .style("fill-opacity", 0.1)
       .style("fill", (d) => d.cl);
 
+    links
+      .selectAll(".link")
+      .data(create_links(data.blocks))
+      .join("path")
+      .attr("class", "link")
+      .attr("d", d3.linkVertical())
+      .attr("fill", "none")
+      .attr("stroke", (d) => d.cl)
+      .attr("stroke-width", 0.5);
+
+    function create_links(blocks) {
+      let links = [];
+      src_b = blocks[0];
+      let i = 1;
+      while (i < blocks.length) {
+        dist_b = blocks[i];
+        if (src_b.n == dist_b.n) {
+          sd = fetch_data(src_b);
+          dd = fetch_data(dist_b);
+          links.push({
+            source: [sd.midx, sd.midy + Y(0) + 25],
+            target: [dd.midx, dd.midy + Y(0)],
+            cl: src_b.cl,
+          });
+        }
+        src_b = dist_b;
+        i += 1;
+      }
+
+      function fetch_data(d) {
+        return d3.select(`#${d.id}-${d.n}`).data()[0];
+      }
+
+      // for (let it in pairs) {
+      //   let src = get_node(pairs[it][0]).attr("opacity", 0.96);
+      //   let trg = get_node(pairs[it][1]).attr("opacity", 0.96);
+      //   let src_d = src.data()[0];
+      //   let trg_d = trg.data()[0];
+      //   if (src_d.t == "g" && trg_d.t == "r") {
+      //     srcX = src_d.size + wspace;
+      //     trgX = 0;
+      //   } else if (src_d.t == "g" && trg_d.t == "a") {
+      //     srcX = 0;
+      //     trgX = trg_d.size + wspace;
+      //   } else if (src_d.t == "a" && trg_d.t == "g") {
+      //     srcX = src_d.size + wspace;
+      //     trgX = 0;
+      //   } else if (src_d.t == "r" && trg_d.t == "g") {
+      //     srcX = 0;
+      //     trgX = trg_d.size + wspace;
+      //   }
+      //   links.push({
+      //     source: [src_d.x + srcX, src_d.y + 8],
+      //     target: [trg_d.x + trgX, trg_d.y + 8],
+      //   });
+      // }
+      return links;
+    }
+
     function transform(d) {
       genome_idx = seqYaxis[d.id];
       let l = d.l;
-      let sig = l < 0 ? -2.5 : -8;
+      let bias = l < 0 ? -2.5 : -8;
       let x = X(Math.abs(l)) - X(0),
-        y = Y(genome_idx + sig);
+        y = Y(genome_idx + bias);
+
+      d.midx = x + X(Math.abs(d.l - d.r) / 2);
+      d.midy = y;
+
       return "translate(" + x + "," + y + ")";
     }
 

@@ -6,3 +6,6 @@
   stroke-width: 0.5;
   stroke-dasharray: 5;
 }
+.axis-grid .domain {
+  display: none;
+}
