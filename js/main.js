@@ -59,9 +59,10 @@ const svg_handlers = {
       .attr("transfrom", `translate(0,-${inner_height})`)
       .call(xAxisGrid);
 
+    let links = svg.append("g").attr("id", "links");
     let blocks = svg.append("g").attr("id", "blocks");
     let ge_lines = svg.append("g").attr("id", "ge_lines");
-    let links = svg.append("g").attr("id", "links");
+
     set_block_color(data.blocks);
 
     ge_lines
@@ -83,7 +84,7 @@ const svg_handlers = {
       .data(data.blocks)
       .enter()
       .append("rect")
-      .attr("class", "block")
+      .attr("class", (d) => "block " + d.n)
       .attr("id", (d) => `${d.id}-${d.n}`)
       .attr("rx", 1)
       .attr("ry", 1)
@@ -95,13 +96,30 @@ const svg_handlers = {
       .style("stroke-width", 0.9)
       .style("stroke", (d) => d.cl)
       .style("fill-opacity", 0.1)
-      .style("fill", (d) => d.cl);
+      .style("fill", (d) => d.cl)
+      .style("cursor", "pointer")
+      .on("mouseover", function (e) {
+        let block = d3.select(this).attr("class").split(" ")[1];
+        blocks.selectAll(`.block`).style("fill-opacity", 0.2);
+        blocks.selectAll(`.block`).style("stroke-width", 0.2);
+
+        blocks.selectAll(`.${block}`).style("fill-opacity", 0.5);
+        blocks.selectAll(`.${block}`).style("stroke-width", 0.9);
+
+        links.selectAll(`.link`).style("stroke-width", 0.1);
+        links.selectAll(`.${block}`).style("stroke-width", 1);
+      })
+      .on("mouseleave", function (e) {
+        blocks.selectAll(`.block`).style("fill-opacity", 0.2);
+        links.selectAll(`.link`).style("stroke-width", 0.5);
+        blocks.selectAll(`.block`).style("stroke-width", 0.9);
+      });
 
     links
       .selectAll(".link")
       .data(create_links(data.blocks))
       .join("path")
-      .attr("class", "link")
+      .attr("class", (d) => "link " + d.name)
       .attr("d", d3.linkVertical())
       .attr("fill", "none")
       .attr("stroke", (d) => d.cl)
@@ -120,6 +138,7 @@ const svg_handlers = {
             source: [sd.midx, sd.midy + Y(0) + 25],
             target: [dd.midx, dd.midy + Y(0)],
             cl: src_b.cl,
+            name: src_b.n,
           });
         }
         src_b = dist_b;
