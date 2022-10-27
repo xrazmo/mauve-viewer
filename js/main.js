@@ -1,13 +1,13 @@
-const XMAX = 22500;
+const XMAX = 23000;
 
 const svg_handlers = {
   plot_genomes: (svg_tag, data) => {
     const genome_count = data.genomes.length;
     let ycoef = 11;
 
-    const width = 700,
+    const width = 1000,
       height = 600;
-    const margin = { top: 20, buttom: 10, left: 10, right: 10 };
+    const margin = { top: 20, buttom: 10, left: 50, right: 10 };
     const inner_height = height - margin.top - margin.buttom;
     const inner_width = width - margin.right;
     const svg = d3
@@ -29,7 +29,7 @@ const svg_handlers = {
     let xAxis = d3
       .axisBottom()
       .scale(X)
-      .ticks(10, ".1s")
+      .ticks(20, ".1s")
       .tickSizeInner(3)
       .tickSizeOuter(0);
 
@@ -38,7 +38,7 @@ const svg_handlers = {
       .scale(X)
       .tickFormat("")
       .tickSize(inner_height)
-      .ticks(10, ".1s");
+      .ticks(20, ".1s");
 
     let axises_g = svg.append("g");
     let seqYaxis = {};
@@ -60,24 +60,52 @@ const svg_handlers = {
       .call(xAxisGrid);
 
     let links = svg.append("g").attr("id", "links");
+    let guides = svg.append("g").attr("id", "guides");
     let blocks = svg.append("g").attr("id", "blocks");
-    let ge_lines = svg.append("g").attr("id", "ge_lines");
 
     set_block_color(data.blocks);
 
-    ge_lines
-      .selectAll(".ge-line")
-      .data(Object.values(seqYaxis))
+    guides
+      .selectAll(".guide")
+      .data(data.genomes)
       .enter()
+      .append("g")
+      .attr("class", "guide")
       .append("line")
       .attr("class", "ge-line")
       .attr("x1", X(0))
-      .attr("y1", (d) => Y(d))
+      .attr("y1", (d) => Y(seqYaxis[d.id]))
       .attr("x2", X(XMAX))
-      .attr("y2", (d) => Y(d))
+      .attr("y2", (d) => Y(seqYaxis[d.id]))
       .style("stroke", "#bdbdbd")
       .style("stroke-width", 2)
       .style("stroke-linecap", "round");
+
+    guides
+      .selectAll(".guide")
+      .append("text")
+      .attr("class", "seq-title")
+      .attr("transform", (d) => `translate(0,${Y(seqYaxis[d.id] - 0.2)})`)
+      .text((d) => d.name);
+
+    guides
+      .selectAll(".guide")
+      .append("text")
+      .attr("class", "strand")
+      .attr(
+        "transform",
+        (d) => `translate(${X(XMAX)},${Y(seqYaxis[d.id] + 2)})`
+      )
+      .text("\uf060 R");
+    guides
+      .selectAll(".guide")
+      .append("text")
+      .attr("class", "strand")
+      .attr(
+        "transform",
+        (d) => `translate(${X(XMAX)},${Y(seqYaxis[d.id] - 1)})`
+      )
+      .text("\uf061 F");
 
     blocks
       .selectAll("block")
@@ -148,37 +176,13 @@ const svg_handlers = {
       function fetch_data(d) {
         return d3.select(`#${d.id}-${d.n}`).data()[0];
       }
-
-      // for (let it in pairs) {
-      //   let src = get_node(pairs[it][0]).attr("opacity", 0.96);
-      //   let trg = get_node(pairs[it][1]).attr("opacity", 0.96);
-      //   let src_d = src.data()[0];
-      //   let trg_d = trg.data()[0];
-      //   if (src_d.t == "g" && trg_d.t == "r") {
-      //     srcX = src_d.size + wspace;
-      //     trgX = 0;
-      //   } else if (src_d.t == "g" && trg_d.t == "a") {
-      //     srcX = 0;
-      //     trgX = trg_d.size + wspace;
-      //   } else if (src_d.t == "a" && trg_d.t == "g") {
-      //     srcX = src_d.size + wspace;
-      //     trgX = 0;
-      //   } else if (src_d.t == "r" && trg_d.t == "g") {
-      //     srcX = 0;
-      //     trgX = trg_d.size + wspace;
-      //   }
-      //   links.push({
-      //     source: [src_d.x + srcX, src_d.y + 8],
-      //     target: [trg_d.x + trgX, trg_d.y + 8],
-      //   });
-      // }
       return links;
     }
 
     function transform(d) {
       genome_idx = seqYaxis[d.id];
       let l = d.l;
-      let bias = l < 0 ? -2.5 : -8;
+      let bias = l < 0 ? -2.5 : -8.5;
       let x = X(Math.abs(l)) - X(0),
         y = Y(genome_idx + bias);
 

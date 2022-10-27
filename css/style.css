@@ -9,3 +9,16 @@
 .axis-grid .domain {
   display: none;
 }
+
+.guide .strand {
+  font-family: "FontAwesome";
+  font-size: 0.5rem;
+  text-anchor: middle;
+}
+
+.guide .seq-title {
+  font-family: "Segoe UI";
+  font-weight: bold;
+  font-size: 0.6rem;
+  text-anchor: right;
+}
