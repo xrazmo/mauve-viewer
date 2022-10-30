@@ -22,3 +22,30 @@
   font-size: 0.6rem;
   text-anchor: right;
 }
+.orf {
+  cursor: pointer;
+  stroke-width: 0.3px;
+  stroke: #000;
+  fill-opacity: 0.6;
+}
+.orf-label {
+  font-size: 0.7rem;
+  fill: #000;
+}
+.args {
+  fill: #a50f15;
+}
+
+.vfs {
+  fill: #bf812d;
+}
+
+.nr {
+  fill: #99d8c9;
+}
+.bacmet {
+  fill: #f4c20f;
+}
+.other {
+  fill: #bdbdbd;
+}

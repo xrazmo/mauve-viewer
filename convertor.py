@@ -1,8 +1,8 @@
 
-import os,sys, argparse
-from numpy import int32
+import os, argparse
 import pandas as pd
 import json
+
 def backbone2js(in_tsv,out_dir):
     df = pd.read_csv(in_tsv,header=0,sep='\t')
     block_dict = {"genomes":[],"blocks":[],"annotations":[]}

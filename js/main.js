@@ -1,4 +1,4 @@
-const XMAX = 23000;
+const XMAX = 12000;
 
 const svg_handlers = {
   plot_genomes: (svg_tag, data) => {
@@ -62,6 +62,7 @@ const svg_handlers = {
     let links = svg.append("g").attr("id", "links");
     let guides = svg.append("g").attr("id", "guides");
     let blocks = svg.append("g").attr("id", "blocks");
+    let orfs = svg.append("g").attr("id", "orfs");
 
     set_block_color(data.blocks);
 
@@ -153,6 +154,60 @@ const svg_handlers = {
       .attr("stroke", (d) => d.cl)
       .attr("stroke-width", 0.5);
 
+    d3.map(data.annotations, function (d) {
+      if (d.strand == "-") {
+        let _tmp = d.sidx;
+        d.sidx = d.eidx;
+        d.eidx = _tmp;
+      }
+    });
+    const xVisibleMax = X(XMAX);
+    const CHAR_SPACE = 5;
+
+    orfs
+      .selectAll(".orf")
+      .data(data.annotations)
+      .enter()
+      .append("path")
+      .attr("id", (d) => `orfs-${d.sample}_${d.accession}`)
+      .attr("class", (d) => "orf " + (d.refdb ? d.refdb : "other"))
+      .attr("d", (d) =>
+        getPath(
+          { x: X(d.sidx), y: Y(seqYaxis[d.id] - 1) },
+          { x: X(d.eidx), y: Y(seqYaxis[d.id] - 1) },
+          14,
+          14,
+          4
+        )
+      )
+      .attr("transform", function (d) {
+        d.rnd = Math.random();
+        let bais = Math.floor(Math.abs((d.rnd * 10) % 2) + 2);
+
+        return transform_ORFs(
+          { x: X(d.sidx), y: Y(seqYaxis[d.id] - bais) },
+          { x: X(d.eidx), y: Y(seqYaxis[d.id] - bais) }
+        );
+      });
+    orfs
+      .selectAll(".orf-label")
+      .data(data.annotations)
+      .enter()
+      .append("text")
+      .attr("class", "orf-label")
+      .attr("transform", function (d) {
+        if (!d.stitle) return;
+        let bais = Math.floor(Math.abs(((d.rnd * 10) % 2) + 2));
+        return getTextTransform(
+          d,
+          Y(seqYaxis[d.id] - bais),
+          d.stitle.length,
+          xVisibleMax
+        );
+      })
+      .attr("display", (d) => (textFits(d, xVisibleMax) ? null : "none"))
+      .text((d) => d.stitle);
+
     function create_links(blocks) {
       let links = [];
       src_b = blocks[0];
@@ -182,7 +237,7 @@ const svg_handlers = {
     function transform(d) {
       genome_idx = seqYaxis[d.id];
       let l = d.l;
-      let bias = l < 0 ? -2.5 : -8.5;
+      let bias = l < 0 ? -3 : -8.5;
       let x = X(Math.abs(l)) - X(0),
         y = Y(genome_idx + bias);
 
@@ -194,6 +249,10 @@ const svg_handlers = {
 
     function set_block_color(blocks) {
       let palette = [
+        "#e7c6ff",
+        "#E0144C",
+        "#80ed99",
+        "#9bb1ff",
         "#d4a373",
         "#606c38",
         "#fcbf49",
@@ -202,10 +261,6 @@ const svg_handlers = {
         "#8338ec",
         "#588157",
         "#f15bb5",
-        "#e7c6ff",
-        "#E0144C",
-        "#80ed99",
-        "#9bb1ff",
       ];
       let cl_blocks = {};
       used_cl = 0;
@@ -222,6 +277,97 @@ const svg_handlers = {
 
     function get_rnd_color() {
       return "#" + Math.floor(Math.random() * 16777215).toString(16);
+    }
+
+    function getPath(from, to, lineWidth, arrowheadWidth, arrowheadLength) {
+      var dx = to.x - from.x;
+      var dy = to.y - from.y;
+
+      // Calculate the length of the line
+      var len = Math.sqrt(dx * dx + dy * dy);
+      let dW = arrowheadWidth - lineWidth;
+      if (len < arrowheadLength) {
+        var d = [
+          "M",
+          0,
+          0,
+          "V",
+          lineWidth / 2,
+          "H",
+          0.5 * dx,
+          "V",
+          -lineWidth / 2,
+          "H",
+          0,
+          "V",
+          0,
+          "Z",
+        ];
+        return d.join(" ");
+      } else {
+        // The difference between the line width and the arrow width
+        let dW = arrowheadWidth - lineWidth;
+        // The angle of the line
+        var angle = (Math.atan2(dy, dx) * 180) / Math.PI;
+
+        // Generate a path describing the arrow. For simplicity we define it as a
+        // horizontal line of the right length, and starting at 0,0. Then we rotate
+        // and move it into place with a transform attribute.
+
+        var d = [
+          "M",
+          0,
+          -lineWidth / 2,
+          "h",
+          len - arrowheadLength,
+          "v",
+          -dW / 2,
+          "L",
+          len,
+          0,
+          "L",
+          len - arrowheadLength,
+          arrowheadWidth / 2,
+          "v",
+          -dW / 2,
+          "H",
+          0,
+          "Z",
+        ];
+      }
+
+      return d.join(" ");
+    }
+
+    function transform_ORFs(from, to) {
+      // rotate the arrow if it represent an ORF in reverse strand
+      var dx = to.x - from.x;
+      var dy = to.y - from.y;
+      var angle = (Math.atan2(dy, dx) * 180) / Math.PI;
+      var scaleTxt = angle === 180 ? "scale(-1, 1)" : "";
+      return "translate(" + from.x + "," + from.y + ") " + scaleTxt;
+    }
+    function getTextTransform(d, ydt, textlen, maxAxis) {
+      let leftPoint = Math.min(X(d.eidx), X(d.sidx));
+      let rightPoint = Math.max(X(d.eidx), X(d.sidx));
+      leftPoint = Math.max(0, leftPoint);
+      rightPoint = Math.min(rightPoint, maxAxis);
+      let xtr = leftPoint + Math.abs(rightPoint - leftPoint) / 4;
+      return (
+        "translate(" +
+        (xtr - 0.5 * textlen * CHAR_SPACE) +
+        "," +
+        (ydt + 3) +
+        ")"
+      );
+    }
+    function textFits(d, maxAxis) {
+      if (!d.stitle) return false;
+
+      let leftPoint = Math.max(0, Math.min(X(d.eidx), X(d.sidx)));
+      let rightPoint = Math.min(Math.max(X(d.eidx), X(d.sidx)), maxAxis);
+      let visibleLength = rightPoint - leftPoint;
+      return d.stitle.length * CHAR_SPACE < visibleLength;
     }
   },
 };
