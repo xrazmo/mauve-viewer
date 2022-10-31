@@ -26,10 +26,11 @@
   cursor: pointer;
   stroke-width: 0.3px;
   stroke: #000;
-  fill-opacity: 0.6;
+  fill-opacity: 0.7;
 }
 .orf-label {
   font-size: 0.7rem;
+  font-weight: 700;
   fill: #000;
 }
 .args {
@@ -44,8 +45,23 @@
   fill: #99d8c9;
 }
 .bacmet {
-  fill: #f4c20f;
+  fill: #fd8d3c;
 }
 .other {
-  fill: #bdbdbd;
+  fill: #969696;
+}
+.iss {
+  fill: #1d91c0;
+}
+.missing {
+  fill: #c00ad4;
+}
+.hyp {
+  fill: #fee08b;
+}
+.inti {
+  fill: #41ab5d;
+}
+.trans {
+  fill: #225ea8;
 }

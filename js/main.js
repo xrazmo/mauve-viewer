@@ -124,7 +124,7 @@ const svg_handlers = {
       .attr("transform", (d) => transform(d))
       .style("stroke-width", 0.9)
       .style("stroke", (d) => d.cl)
-      .style("fill-opacity", 0.1)
+      .style("fill-opacity", 0.5)
       .style("fill", (d) => d.cl)
       .style("cursor", "pointer")
       .on("mouseover", function (e) {
@@ -139,7 +139,7 @@ const svg_handlers = {
         links.selectAll(`.${block}`).style("stroke-width", 1);
       })
       .on("mouseleave", function (e) {
-        blocks.selectAll(`.block`).style("fill-opacity", 0.2);
+        blocks.selectAll(`.block`).style("fill-opacity", 0.5);
         links.selectAll(`.link`).style("stroke-width", 0.5);
         blocks.selectAll(`.block`).style("stroke-width", 0.9);
       });
@@ -162,7 +162,7 @@ const svg_handlers = {
       }
     });
     const xVisibleMax = X(XMAX);
-    const CHAR_SPACE = 5;
+    const CHAR_SPACE = 3;
 
     orfs
       .selectAll(".orf")
