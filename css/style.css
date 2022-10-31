@@ -1,5 +1,6 @@
 .tick text {
   font-size: 0.5rem;
+  font-weight: 600;
 }
 .axis-grid line {
   stroke: #9bb1ff;

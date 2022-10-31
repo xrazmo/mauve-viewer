@@ -24,11 +24,20 @@
         <div class="col-11">
           <!-- <div class="row"> -->
           <div class="card shadow-sm">
-            <div class="card-header text-uppercase">
+            <div
+              class="card-header text-uppercase py-3 d-flex flex-row align-items-center justify-content-between"
+            >
               <div class="card-title">progressive alignment</div>
+              <a class="btn" id="save-svg"><i data-feather="save"></i></a>
             </div>
             <div class="card-body">
               <svg id="alignment-svg"></svg>
+              <canvas
+                id="canvas"
+                width="5000"
+                height="5000"
+                style="display: none"
+              ></canvas>
             </div>
           </div>
           <!-- </div> -->
@@ -47,8 +56,14 @@
     integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3"
     crossorigin="anonymous"
   ></script>
-
+  <script src="https://unpkg.com/feather-icons"></script>
   <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script
+    src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.0/FileSaver.min.js"
+    integrity="sha512-csNcFYJniKjJxRWRV1R7fvnXrycHP6qDR21mgz1ZP55xY5d+aHLfo9/FcGDQLfn2IfngbAHd8LdfsagcCqgTcQ=="
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"
+  ></script>
   <script src="data/backbone.js"></script>
   <script src="js/main.js"></script>
 </html>

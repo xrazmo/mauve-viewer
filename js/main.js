@@ -1,13 +1,13 @@
+feather.replace();
 const XMAX = 12000;
-
 const svg_handlers = {
   plot_genomes: (svg_tag, data) => {
     const genome_count = data.genomes.length;
-    let ycoef = 11;
+    let ycoef = 20;
 
-    const width = 1000,
-      height = 600;
-    const margin = { top: 20, buttom: 10, left: 50, right: 10 };
+    const width = 800,
+      height = 800;
+    const margin = { top: 20, buttom: 10, left: 50, right: 20 };
     const inner_height = height - margin.top - margin.buttom;
     const inner_width = width - margin.right;
     const svg = d3
@@ -121,8 +121,8 @@ const svg_handlers = {
       .attr("y", Y(0))
       .attr("width", (d) => X(Math.abs(d.l - d.r)) - X(0))
       .attr("height", 25)
-      .attr("transform", (d) => transform(d))
-      .style("stroke-width", 0.9)
+      .attr("transform", (d) => transform_blocks(d))
+      .style("stroke-width", 1)
       .style("stroke", (d) => d.cl)
       .style("fill-opacity", 0.5)
       .style("fill", (d) => d.cl)
@@ -140,8 +140,8 @@ const svg_handlers = {
       })
       .on("mouseleave", function (e) {
         blocks.selectAll(`.block`).style("fill-opacity", 0.5);
-        links.selectAll(`.link`).style("stroke-width", 0.5);
-        blocks.selectAll(`.block`).style("stroke-width", 0.9);
+        links.selectAll(`.link`).style("stroke-width", 0.75);
+        blocks.selectAll(`.block`).style("stroke-width", 1);
       });
 
     links
@@ -152,7 +152,7 @@ const svg_handlers = {
       .attr("d", d3.linkVertical())
       .attr("fill", "none")
       .attr("stroke", (d) => d.cl)
-      .attr("stroke-width", 0.5);
+      .attr("stroke-width", 0.75);
 
     d3.map(data.annotations, function (d) {
       if (d.strand == "-") {
@@ -198,7 +198,7 @@ const svg_handlers = {
       .attr("transform", function (d) {
         if (!d.stitle) return;
         let bais = Math.floor(Math.abs(((d.rnd * 10) % 2) + 2));
-        return getTextTransform(
+        return transform_labels(
           d,
           Y(seqYaxis[d.id] - bais),
           d.stitle.length,
@@ -234,10 +234,10 @@ const svg_handlers = {
       return links;
     }
 
-    function transform(d) {
+    function transform_blocks(d) {
       genome_idx = seqYaxis[d.id];
       let l = d.l;
-      let bias = l < 0 ? -3 : -8.5;
+      let bias = l < 0 ? -3.5 : -11.5;
       let x = X(Math.abs(l)) - X(0),
         y = Y(genome_idx + bias);
 
@@ -347,7 +347,7 @@ const svg_handlers = {
       var scaleTxt = angle === 180 ? "scale(-1, 1)" : "";
       return "translate(" + from.x + "," + from.y + ") " + scaleTxt;
     }
-    function getTextTransform(d, ydt, textlen, maxAxis) {
+    function transform_labels(d, ydt, textlen, maxAxis) {
       let leftPoint = Math.min(X(d.eidx), X(d.sidx));
       let rightPoint = Math.max(X(d.eidx), X(d.sidx));
       leftPoint = Math.max(0, leftPoint);
@@ -371,5 +371,30 @@ const svg_handlers = {
     }
   },
 };
+function clear_canvas() {
+  var canvas = document.getElementById("canvas");
+  var ctx = canvas.getContext("2d");
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
+
+$("#save-svg").on("click", function (event) {
+  clear_canvas();
+  var svgString = new XMLSerializer().serializeToString(
+    document.querySelector("#alignment-svg")
+  );
+  var canvas = document.getElementById("canvas");
+  var ctx = canvas.getContext("2d");
+  var DOMURL = self.URL || self.webkitURL || self;
+  var img = new Image();
+  var svg = new Blob([svgString], { type: "image/svg+xml;charset=utf-8" });
+  var url = DOMURL.createObjectURL(svg);
+  img.onload = function () {
+    ctx.drawImage(img, 0, 0);
+    var png = canvas.toDataURL("image/tiff");
+    saveAs(png, "figure.tiff");
+    DOMURL.revokeObjectURL(png);
+  };
+  img.src = url;
+});
 
 svg_handlers.plot_genomes("alignment-svg", data);
