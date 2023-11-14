@@ -1,11 +1,11 @@
 import os, argparse
-from traceback import print_tb
 import pandas as pd
 import json
 import sqlite3 as lit
 from Bio import SeqIO
 from glob import glob
 from Bio.SeqRecord import SeqRecord
+
 
 def fetch_genetic_contexts(ref_db,fasta_dir,out_dir):
     genomes_order= {
